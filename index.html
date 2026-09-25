@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>從一份需求文件出發，10 輪對話、完成示意Demo站</title>
+<meta name="description" content="從一份需求文件到 8 頁示意站：10 輪對話、每一步我說了什麼、AI 做了什麼、我在哪裡把關。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+/* =========================================================================
+   製作歷程說明頁
+   結構：tokens／base／版面 → hero／目錄 → 摘要／流程 → 步驟（對話框）
+        → 表格與狀態標籤 → 重點面板 → 樹狀圖／版型圖鑑 → 卡片／心法 → 頁尾
+   ========================================================================= */
+
+/* ---------- tokens ---------- */
+:root{
+  --paper:#fdfcf8; --paper-2:#f5f0e6; --ink:#262119; --muted:#6d6455; --line:#e6dfce;
+  --teal:#0f4a54; --teal-deep:#0a343b;
+  --gold:#b0883b; --gold-soft:#cfa964; --gold-wash:#f3e9d5;
+  --me:#e8f1f2;
+  --serif:"Noto Serif TC","Songti TC","SimSun",serif;
+  --sans:"Noto Sans TC","Segoe UI","Microsoft JhengHei UI",Arial,sans-serif;
+  --shadow:0 18px 40px -26px rgba(20,40,44,.5);
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.8;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:var(--teal)}
+h1,h2,h3,h4{font-family:var(--serif);line-height:1.3;margin:0}
+code{font-size:.9em}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1040px;margin-inline:auto;padding-inline:clamp(18px,5vw,48px)}
+section{padding-block:clamp(48px,8vw,96px)}
+section.alt{background:var(--paper-2)}
+.kicker{display:inline-flex;align-items:center;gap:.6em;font-size:.8rem;letter-spacing:.28em;font-weight:700;color:var(--gold);margin:0 0 .9rem}
+.kicker::before{content:"";width:32px;height:1px;background:var(--gold-soft)}
+.title{font-size:clamp(1.5rem,3.6vw,2.3rem);margin-bottom:.5em}
+.title.xl{font-size:clamp(2.2rem,6vw,3.6rem);margin-bottom:.6em}
+.sub{color:var(--muted);max-width:60ch;margin:0 0 2rem}
+
+/* ---------- hero ---------- */
+.hero{position:relative;color:#fff;padding:clamp(72px,14vh,150px) 0 clamp(56px,9vh,110px);
+  background:var(--teal-deep) url("assets/img/history/ch2_04_campus_view_1961.jpg") center/cover}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,40,46,.86),rgba(8,40,46,.93))}
+.hero .wrap{position:relative}
+.eyebrow{font-size:.82rem;letter-spacing:.34em;color:var(--gold-soft);margin:0 0 1.2rem}
+.hero h1{font-size:clamp(1.9rem,5.4vw,3.4rem);font-weight:900;letter-spacing:.02em}
+.hero .lead{max-width:44ch;color:#d7e2e0;font-size:clamp(1rem,2vw,1.2rem);margin:1.2rem 0 0}
+.stats{display:flex;flex-wrap:wrap;gap:clamp(18px,4vw,44px);margin-top:2.4rem}
+.stat b{display:block;font-family:var(--serif);font-weight:900;font-size:clamp(1.9rem,5vw,2.9rem);color:var(--gold-soft);line-height:1}
+.stat span{font-size:.84rem;color:#bcd0cd;letter-spacing:.06em}
+.meta{margin-top:2rem;font-size:.82rem;color:#9fb6b3}
+.meta a{color:#cfe0de}
+
+/* ---------- 目錄 ---------- */
+.toc{position:sticky;top:0;z-index:20;background:rgba(253,252,248,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.toc .wrap{display:flex;gap:6px 18px;overflow-x:auto;padding-block:10px;white-space:nowrap;font-size:.86rem}
+.toc a{text-decoration:none;color:var(--muted);padding:.2em .1em;border-bottom:2px solid transparent}
+.toc a:hover{color:var(--teal);border-bottom-color:var(--gold)}
+
+/* ---------- 重點摘要 ---------- */
+.tldr{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.tldr div{background:#fff;border:1px solid var(--line);border-top:4px solid var(--gold);border-radius:6px;padding:26px 24px 28px}
+.tldr h3{font-size:1.25rem;color:var(--teal);margin-bottom:.5em}
+.tldr p{margin:0;font-size:1rem;color:var(--muted)}
+
+/* ---------- 協作循環 ---------- */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:1.6rem 0 0}
+.flow .chip{padding:.5em 1em;border-radius:99px;background:var(--teal);color:#fff;font-size:.88rem;font-weight:700}
+.flow .chip.ai{background:var(--gold)}
+.flow i{font-style:normal;color:var(--gold)}
+
+/* ---------- 步驟與對話框 ---------- */
+.step{display:grid;grid-template-columns:76px 1fr;gap:clamp(14px,3vw,34px);padding-block:clamp(28px,5vw,52px);border-top:1px solid var(--line)}
+.step:first-of-type{border-top:0}
+.num{font-family:var(--serif);font-weight:900;font-size:clamp(2.2rem,5vw,3.2rem);color:var(--gold);line-height:1;text-align:right}
+.step h3{font-size:clamp(1.25rem,2.6vw,1.65rem);margin-bottom:.5em}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.14em;font-weight:700;color:var(--teal);background:var(--me);padding:.15em .7em;border-radius:99px;margin-left:.6em;vertical-align:middle}
+.tag.warn{background:#fbe9dc;color:#9a4a12}
+
+.bubble{border-radius:10px;padding:14px 18px;margin:14px 0;font-size:.97rem;max-width:760px}
+.bubble small{display:block;font-size:.72rem;letter-spacing:.16em;font-weight:700;margin-bottom:.35em}
+.bubble.me{background:var(--me);border:1px solid #cfe1e3}
+.bubble.me small{color:var(--teal)}
+.bubble.ai{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}
+.bubble.ai small{color:var(--gold)}
+.bubble ul{margin:.3em 0 0;padding-left:1.2em}
+.bubble li{margin:.15em 0}
+.quote{font-family:var(--serif);font-size:1rem}
+.orig{display:block;margin-top:.7em;padding-top:.6em;border-top:1px dashed #b8cdd1;font-size:.85rem;color:var(--muted)}
+
+.learn{margin-top:14px;padding:12px 16px;border-left:4px solid var(--gold);background:var(--gold-wash);border-radius:0 6px 6px 0;font-size:.92rem}
+.learn b{color:var(--teal)}
+
+.docfig{margin:16px 0 4px;max-width:760px}
+.docfig img{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff;box-shadow:var(--shadow)}
+.docfig img + img{margin-top:8px}
+.docfig figcaption{margin-top:.6em;font-size:.82rem;color:var(--muted)}
+
+/* ---------- 表格與狀態標籤 ---------- */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:12px;background:#fff}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--paper-2);font-weight:700}
+table.lk td,table.lk th{font-size:.82rem;word-break:break-all}
+table.lk small{color:var(--muted)}
+table.lk.big td,table.lk.big th{font-size:.92rem;padding:10px 12px}
+table.lk.big td:first-child{white-space:nowrap}
+.st{display:inline-block;font-size:.7rem;font-weight:700;border-radius:99px;padding:.05em .65em;margin-right:.5em;white-space:nowrap}
+table.lk.big .st{font-size:.76rem}
+.st.ok{background:#dcefe6;color:#1d6a45}
+.st.part{background:var(--gold-wash);color:#7a5a17}
+.st.no{background:#fbe1dc;color:#9b2c1c}
+.st.skip{background:#eceae4;color:#6d6455}
+
+/* ---------- 重點面板 ---------- */
+.bigpanel{margin:26px 0 8px;background:linear-gradient(180deg,#fff,var(--gold-wash));border:2px solid var(--teal);border-radius:10px;padding:clamp(18px,3.4vw,34px);box-shadow:var(--shadow)}
+.bigkicker{margin:0 0 .3rem;font-size:.78rem;letter-spacing:.3em;font-weight:700;color:var(--gold)}
+.bigpanel h3{font-size:clamp(1.4rem,3.2vw,2rem);color:var(--teal);margin:0 0 .4em}
+.bigsub{margin:0 0 1.2rem;color:var(--muted);font-size:.98rem;max-width:64ch}
+.bigstats{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));margin:0 0 1.2rem}
+.bigstats div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-align:center}
+.bigstats b{display:block;font-family:var(--serif);font-weight:900;font-size:clamp(1.8rem,4vw,2.6rem);color:var(--gold);line-height:1.1}
+.bigstats span{font-size:.82rem;color:var(--muted)}
+
+/* ---------- 樹狀圖與版型圖鑑 ---------- */
+.treebox{margin-top:26px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:clamp(16px,3vw,28px)}
+.treebox h4{font-size:1.12rem;margin:0 0 .4em;color:var(--teal)}
+.treenote{margin:0 0 18px;font-size:.86rem;color:var(--muted)}
+.tree,.tree ul{list-style:none;margin:0;padding:0}
+.tree ul{position:relative;margin-left:22px;padding-left:24px}
+.tree ul::before{content:"";position:absolute;left:0;top:0;bottom:26px;border-left:2px solid var(--line)}
+.tree li{position:relative;padding:5px 0}
+.tree ul > li::before{content:"";position:absolute;left:-24px;top:26px;width:22px;border-top:2px solid var(--line)}
+.node{display:inline-flex;flex-wrap:wrap;align-items:center;gap:4px 10px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:7px 12px;font-size:.88rem;max-width:100%}
+.node b{font-family:var(--serif);font-size:.95rem}
+.node.root{background:var(--teal);border-color:var(--teal);color:#fff}
+.node.root .ref{color:#cfe0de}
+.lay{background:var(--gold-wash);color:#7a5a17;border-radius:99px;padding:.05em .7em;font-size:.74rem;font-weight:700;white-space:nowrap}
+.ref{font-size:.76rem;color:var(--muted)}
+.out{font-size:.72rem;color:var(--teal);background:var(--me);border-radius:4px;padding:.05em .5em;white-space:nowrap}
+.legend{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-top:10px}
+.wf{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 10px 12px;text-align:center}
+.wf svg{width:100%;height:auto;display:block;margin-bottom:6px}
+.wf svg *{fill:none;stroke:var(--teal);stroke-width:1.6;stroke-linejoin:round}
+.wf svg .f{fill:var(--gold-soft);stroke:var(--gold)}
+.wf b{display:block;font-size:.84rem;color:var(--teal)}
+.wf span{font-size:.72rem;color:var(--muted)}
+
+/* ---------- 心法／分工卡片 ---------- */
+.pattern,.two{display:grid;gap:14px}
+.pattern{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.pattern div{background:#fff;border:1px solid var(--line);border-radius:6px;padding:18px 20px}
+.pattern b{color:var(--teal);font-family:var(--serif);font-size:1.02rem}
+.pattern p{margin:.4em 0 0;font-size:.9rem;color:var(--muted)}
+.pattern code{background:var(--paper-2);padding:.05em .4em;border-radius:3px;font-size:.85em}
+.two{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:22px 24px}
+.card h3{font-size:1.15rem;margin-bottom:.6em}
+.card.me{border-top:3px solid var(--teal)}
+.card.ai{border-top:3px solid var(--gold)}
+.card ul{margin:0;padding-left:1.2em;color:var(--muted);font-size:.94rem}
+
+/* ---------- 成品按鈕、頁尾 ---------- */
+.livebtn{display:inline-flex;flex-direction:column;gap:.3em;text-decoration:none;background:var(--teal);color:#fff;border-radius:10px;padding:20px 30px;box-shadow:var(--shadow);transition:transform .2s,background .2s}
+.livebtn:hover{background:var(--teal-deep);transform:translateY(-2px)}
+.livebtn span{font-family:var(--serif);font-weight:700;font-size:1.3rem}
+.livebtn small{font-size:.82rem;color:#cfe0de;word-break:break-all}
+footer{background:var(--teal-deep);color:#b8cbc8;padding:40px 0;font-size:.86rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 32px;justify-content:space-between}
+footer a{color:#cfe0de}
+
+/* ---------- responsive / print ---------- */
+@media (max-width:640px){
+  .step{grid-template-columns:1fr}
+  .num{text-align:left}
+}
+@media print{
+  body{background:#fff}
+  .toc{display:none}
+  .hero{padding:40px 0}
+  section{padding-block:28px}
+  .step,.bubble,.card{break-inside:avoid}
+  a{color:inherit;text-decoration:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================ Hero ============================ -->
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">MAKING OF ・ 製作歷程說明</p>
+    <h1>從一份需求文件出發，<br>10 輪對話、完成示意Demo站</h1>
+    <p class="lead">中研院百年院慶示意站的製作過程：每一步我說了什麼、AI 做了什麼、我在哪裡把關，完整記錄。</p>
+    <div class="stats">
+      <div class="stat"><b>10</b><span>輪對話</span></div>
+      <div class="stat"><b>8</b><span>個頁面成品</span></div>
+      <div class="stat"><b>8</b><span>個參考網站被實際分析</span></div>
+      <div class="stat"><b>4</b><span>個人工把關點</span></div>
+    </div>
+    <p class="meta">工作日期：2026-09-06　・　本說明整理：2026-09-25　・　成品：<a href="https://yunrudu.github.io/centennial-demo/index.html" target="_blank" rel="noopener">yunrudu.github.io/centennial-demo</a></p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="章節目錄"><div class="wrap">
+  <a href="#tldr">重點摘要</a><a href="#flow">協作方式</a>
+  <a href="#s1">1 分析</a><a href="#s2">2 追問</a><a href="#s3">3 給連結</a><a href="#s4">4 踩坑</a><a href="#s5">5 調整</a><a href="#s6">6 交接</a>
+  <a href="#patterns">溝通心法</a><a href="#roles">分工</a><a href="#product">成品</a>
+</div></nav>
+
+<main>
+
+<!-- ============================ 重點摘要 ============================ -->
+<section id="tldr">
+  <div class="wrap">
+    <h2 class="title xl">重點摘要</h2>
+    <div class="tldr">
+      <div><h3>我怎麼做</h3><p>用白話中文講需求、貼參考網址、貼截圖回報問題。不需要自己寫程式，也不需要一次講完整規格——邊做邊講、逐輪修正。</p></div>
+      <div><h3>做出了什麼</h3><p>8 頁示意站：開場倒數計時、百年大事記（每 10 年摺疊）、歷任院長、真實院內新聞、院區捲動敘事、系列活動、禮品等。</p></div>
+      <div><h3>誰負責什麼</h3><p>我負責方向、事實與邊界（例如「現任院長是陳建仁」「不要攻擊別人的網站」）；AI 負責查資料、實作、測試與自我修錯。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 協作方式 ============================ -->
+<section id="flow" class="alt">
+  <div class="wrap">
+    <p class="kicker">協作方式</p>
+    <h2 class="title">每一輪都是同一個小循環</h2>
+    <p class="sub">整個專案沒有「一次交付」。每輪我提一個需求或問題，AI 動手做並自己驗證，我看成果再回饋，接著下一輪。</p>
+    <div class="flow">
+      <span class="chip">我：講需求 / 貼網址 / 貼截圖</span><i>→</i>
+      <span class="chip ai">AI：查資料、寫程式</span><i>→</i>
+      <span class="chip ai">AI：開瀏覽器自己驗證</span><i>→</i>
+      <span class="chip">我：看成果、糾正、補事實</span><i>↻</i>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 步驟 ============================ -->
+<section id="steps">
+  <div class="wrap">
+    <p class="kicker">一步一步</p>
+    <h2 class="title">製作歷程</h2>
+    <p class="sub">起點：資料夾裡已有前期資料（《籌備時程與採購規劃》需求文件、內容分析報告、影片腳本、捲動敘事骨架）。以下從本次工作階段的第一句話開始。</p>
+
+    <!-- 01 分析參考網站 -->
+    <article class="step" id="s1">
+      <div class="num">01</div>
+      <div>
+        <h3>先分析參考網站 <span class="tag">分析</span></h3>
+        <div class="bubble me"><small>我說</small><span class="quote">「幫我分析（籌備文件）裡面提到的網站　大概就好 不用全部都爬取　了解其中使用的技術——網站架設是什麼框架、裡面的呈現用了什麼套件……是否有用 CDN、放在雲端還是自己的主機。<b>請不要以攻擊的方式看別人的網站喔</b>」</span></div>
+        <figure class="docfig">
+          <img src="製作歷程_圖片/需求文件_1.png" alt="需求文件：中研院 100 週年網站初步架構（首頁與分頁）" loading="lazy">
+          <img src="製作歷程_圖片/需求文件_2.png" alt="需求文件：相關連結、百年禮品" loading="lazy">
+          <figcaption>我給的需求文件《百年院慶網頁內容規劃》：中研院 100 週年網站初步架構。藍色底線文字就是文件內附的參考連結（AI 從這裡取出 15 條）。</figcaption>
+        </figure>
+        <div class="bubble ai"><small>AI 做了什麼</small>
+          <ul>
+            <li>從需求 <code>.docx</code> 的超連結找出 <b>15 條連結（12 個網域）</b>（政大、台大、故宮、CERN、LSE、Stanford、中研院院慶站…）</li>
+            <li>以一般訪客的方式各請求一次首頁（命令列請求帶瀏覽器樣式的 User-Agent，加上內建瀏覽器開頁），讀公開的 HTML 與 HTTP 回應標頭判斷技術，不掃描、不探測</li>
+            <li>中研院院慶站：命令列請求得到 401，再用內建瀏覽器開一次，看到「IP 已被封鎖」頁面後<b>就停手，沒有嘗試繞過</b>，並如實回報「只能推論它是自架 + WAF」</li>
+            <li>整理成比較表與結論</li>
+          </ul>
+        </div>
+        <div class="bigpanel">
+          <p class="bigkicker">重點</p>
+          <h3>我請 AI 幫我去查的 15 條連結</h3>
+          <p class="bigsub">這些連結原本就附在需求文件裡。我只說「幫我去查」，AI 自己把它們從文件取出、逐一開啟並判讀技術與呈現方式。以下是完整清單與它查到的結果（呈現方式為依原始碼中的套件與網址路徑推斷，並非逐頁視覺檢視）。</p>
+
+          <div class="bigstats">
+            <div><b>15</b><span>條不重複連結（12 個網域）</span></div>
+            <div><b>8</b><span>個網站被實際開啟</span></div>
+            <div><b>7</b><span>個讀到結果</span></div>
+            <div><b>1</b><span>個被封鎖，AI 停手</span></div>
+          </div>
+
+          <div class="tw"><table class="lk big">
+            <tr><th>對應頁面</th><th>連結</th><th>狀態</th><th>主要呈現方式</th><th>AI 查到的技術／部署</th></tr>
+            <tr><td>首頁</td><td><a href="https://cern70.cern/" target="_blank" rel="noopener">cern70.cern</a></td><td><span class="st ok">已讀取</span></td><td><b>官網式多區塊</b>＋3D 場景＋<b>互動地圖</b>＋輪播／跑馬燈</td><td>WordPress 6.9；Three.js、Leaflet、jQuery；自架（Apache）</td></tr>
+            <tr><td>首頁</td><td><a href="https://www.lse.ac.uk/about-lse/lse-130-anniversary" target="_blank" rel="noopener">lse.ac.uk/about-lse/lse-130-anniversary</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+            <tr><td>首頁／中研院院慶</td><td><a href="https://anniversary.sinica.edu.tw/" target="_blank" rel="noopener">anniversary.sinica.edu.tw</a><small>（文件內出現 3 次）</small></td><td><span class="st no">被封鎖 401</span></td><td>—</td><td>AI 停手，沒有繞過；只能推論由中研院自行維運、前有 WAF</td></tr>
+            <tr><td>首頁／版型</td><td><a href="https://100.nccu.edu.tw/" target="_blank" rel="noopener">100.nccu.edu.tw</a></td><td><span class="st ok">已讀取</span></td><td><b>區塊式長頁</b>：Hero → 影片區塊 → 輪播／卡片；另有時程頁、紀念品子站</td><td>Laravel + Vue；Swiper、YouTube 嵌入；自架 nginx，部分 cdnjs；並量測配色（暖白底、金色點綴、深色主色塊）與字型</td></tr>
+            <tr><td>系列活動</td><td><a href="https://100.nccu.edu.tw/schedules" target="_blank" rel="noopener">100.nccu.edu.tw/schedules</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+            <tr><td>系列活動</td><td><a href="https://theme.npm.edu.tw/npm100/exhibitionsactivities/exhibition" target="_blank" rel="noopener">theme.npm.edu.tw/npm100/…/exhibition</a></td><td><span class="st part">僅讀首頁</span></td><td><b>列表＋輪播</b>：活動展覽列表、大事紀列表</td><td>Nuxt（Vue SSR）；Swiper（大量）；自架</td></tr>
+            <tr><td>系列活動</td><td><a href="https://100.duke.edu/event-calendar/#March2024" target="_blank" rel="noopener">100.duke.edu/event-calendar</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+            <tr><td>百年大事記</td><td><a href="https://theme.npm.edu.tw/npm100/Chronicles/ChroniclesList" target="_blank" rel="noopener">theme.npm.edu.tw/npm100/Chronicles/ChroniclesList</a></td><td><span class="st part">僅讀首頁</span></td><td>同上</td><td>同上（Nuxt SSR）</td></tr>
+            <tr><td>百年大事記</td><td><a href="https://engineering100.stanford.edu/timeline" target="_blank" rel="noopener">engineering100.stanford.edu/timeline</a></td><td><span class="st ok">已讀取</span></td><td><b>互動時間軸</b>（網址 /timeline）</td><td>Next.js；Three.js、Barba；Vercel</td></tr>
+            <tr><td>百大貢獻</td><td><a href="https://lse.shorthandstories.com/130-years-of-alumni-impact/index.html" target="_blank" rel="noopener">lse.shorthandstories.com/…/index.html</a></td><td><span class="st ok">已讀取</span></td><td><b>長頁分段敘事</b>：視差、頁面轉場</td><td>Shorthand 平台；Three.js、Barba、GSAP；AWS S3 + CloudFront</td></tr>
+            <tr><td>百大貢獻</td><td><a href="https://www.gse.harvard.edu/about/history/hgse100" target="_blank" rel="noopener">gse.harvard.edu/about/history/hgse100</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+            <tr><td>百年院區</td><td><a href="https://historygallery.ntu.edu.tw/" target="_blank" rel="noopener">historygallery.ntu.edu.tw</a></td><td><span class="st ok">已讀取</span></td><td><b>相片輪播為主</b>的手刻多頁網站</td><td>無框架（靜態）；Swiper（大量）；自架 + WAF，無公有 CDN</td></tr>
+            <tr><td>百年院區</td><td><a href="https://historygallery.ntu.edu.tw/2018%E5%BB%BA%E7%AF%89%E5%8F%B2%E7%B6%B2%E7%AB%99/" target="_blank" rel="noopener">historygallery.ntu.edu.tw/2018建築史網站/</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+            <tr><td>百年院區</td><td><a href="https://www.cna.com.tw/project/20260430-danjiang-bridge/" target="_blank" rel="noopener">cna.com.tw/project/…/danjiang-bridge</a></td><td><span class="st ok">已讀取</span></td><td><b>捲動敘事專題</b>：邊捲動邊觸發圖文動畫</td><td>Next.js；GSAP；IIS + Google Cloud 邊緣</td></tr>
+            <tr><td>百年禮品</td><td><a href="https://souvenir.nccu.edu.tw/" target="_blank" rel="noopener">souvenir.nccu.edu.tw</a></td><td><span class="st skip">未另外開啟</span></td><td>—</td><td>—</td></tr>
+          </table></div>
+          <p class="treenote" style="margin-top:12px">「未另外開啟」的連結，AI 依需求文件對該頁面的文字描述來對應版型，沒有逐一打開。</p>
+        </div>
+
+        <div class="treebox">
+          <h4>延伸：把每個頁面對到「要用哪種版型」</h4>
+          <p class="treenote">依需求文件的「網站初步架構」逐頁整理，標出各頁採用的版型與對應的參考站（此圖為整理講解頁時補做，並附上最後對應的成品頁）。<b>＊</b> 表示文件有列名，但這次沒有實際檢視。</p>
+
+          <ul class="tree">
+            <li><span class="node root"><b>中研院百年院慶網站</b><span class="ref">需求文件：首頁 + 7 個分頁</span></span>
+              <ul>
+                <li><span class="node"><b>首頁</b><span class="lay">區塊式長頁</span><span class="ref">參考：CERN 70、LSE 130、中研 90＊、政大百年</span><span class="out">成品 index.html</span></span>
+                  <ul>
+                    <li><span class="node"><b>主視覺＋倒數</b><span class="lay">全幅影片 Hero</span><span class="ref">政大百年（section-hero）</span></span></li>
+                    <li><span class="node"><b>形象影片播放</b><span class="lay">影片區塊</span><span class="ref">政大百年（section-video）</span></span></li>
+                    <li><span class="node"><b>你所不知道的中研院／百大貢獻</b><span class="lay">圖文分段</span><span class="ref">LSE 130</span></span></li>
+                    <li><span class="node"><b>中研人的故事（訪談）</b><span class="lay">輪播</span><span class="ref">政大、故宮、台大皆大量使用 Swiper</span></span></li>
+                    <li><span class="node"><b>最新活動（消息）</b><span class="lay">列表</span></span></li>
+                  </ul>
+                </li>
+                <li><span class="node"><b>100 週年系列活動</b><span class="lay">時間軸／區塊</span><span class="ref">政大百年（活動時程頁）、故宮、Duke＊</span><span class="out">成品 events.html</span></span></li>
+                <li><span class="node"><b>百年大事記</b><span class="lay">可展開的時間軸</span><span class="ref">故宮（大事紀列表）、Stanford（/timeline）</span><span class="out">成品 chronicle.html</span></span></li>
+                <li><span class="node"><b>百大貢獻</b><span class="lay">分類卡片牆</span><span class="ref">LSE 130、哈佛教育學院＊</span><span class="out">成品 contributions.html</span></span></li>
+                <li><span class="node"><b>最新活動（消息）</b><span class="lay">列表</span><span class="ref">最後併入首頁「最新消息」，未另立頁</span></span></li>
+                <li><span class="node"><b>百年中研</b><span class="lay">區塊式長頁</span><span class="ref">中研 90＊、政大百年</span><span class="out">成品 centennial.html</span></span>
+                  <ul>
+                    <li><span class="node"><b>院長的話</b><span class="lay">人物圖文</span></span></li>
+                    <li><span class="node"><b>院史電子書</b><span class="lay">封面＋翻閱入口</span></span></li>
+                    <li><span class="node"><b>三大學組簡介</b><span class="lay">三欄卡片</span></span></li>
+                    <li><span class="node"><b>影音</b><span class="lay">輪播</span></span></li>
+                  </ul>
+                </li>
+                <li><span class="node"><b>百年院區</b><span class="lay">捲動敘事＋互動地圖</span><span class="ref">台大校史館、台大校園變遷互動地圖＊、中央社淡江大橋</span><span class="out">成品 campus.html</span></span></li>
+                <li><span class="node"><b>相關連結</b><span class="lay">連結卡片</span><span class="ref">中研 90＊</span><span class="out">成品 links.html</span></span></li>
+                <li><span class="node"><b>百年禮品</b><span class="lay">商品卡片＋輪播</span><span class="ref">政大百年紀念品站</span><span class="out">成品 gifts.html</span></span></li>
+              </ul>
+            </li>
+          </ul>
+
+          <h4 style="margin-top:28px">版型圖鑑：這幾種版型長什麼樣</h4>
+          <div class="legend">
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="4" y="4" width="112" height="72" rx="3"/><rect x="4" y="4" width="112" height="9" class="f"/><rect x="14" y="24" width="60" height="6" class="f"/><rect x="14" y="34" width="40" height="4"/><path d="M84 46l14 8-14 8z" class="f"/></svg><b>全幅 Hero／影片</b><span>政大百年</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="30" y="12" width="60" height="44" rx="3" class="f"/><rect x="4" y="18" width="20" height="32" rx="3"/><rect x="96" y="18" width="20" height="32" rx="3"/><circle cx="52" cy="68" r="3" class="f"/><circle cx="62" cy="68" r="3"/><circle cx="72" cy="68" r="3"/></svg><b>輪播 Swiper</b><span>政大、故宮、台大</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M60 4v72"/><circle cx="60" cy="16" r="4" class="f"/><circle cx="60" cy="40" r="4" class="f"/><circle cx="60" cy="64" r="4" class="f"/><rect x="70" y="10" width="42" height="12" rx="2"/><rect x="8" y="34" width="42" height="12" rx="2"/><rect x="70" y="58" width="42" height="12" rx="2"/></svg><b>時間軸</b><span>故宮、Stanford</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="4" y="6" width="34" height="30" rx="2" class="f"/><rect x="43" y="6" width="34" height="30" rx="2"/><rect x="82" y="6" width="34" height="30" rx="2"/><rect x="4" y="44" width="34" height="30" rx="2"/><rect x="43" y="44" width="34" height="30" rx="2" class="f"/><rect x="82" y="44" width="34" height="30" rx="2"/></svg><b>分類卡片牆</b><span>LSE 130</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="4" y="4" width="54" height="72" rx="3" class="f"/><path d="M68 18h44M68 28h40M68 38h44M68 48h30"/><path d="M4 76h54" stroke-dasharray="3 3"/></svg><b>捲動敘事</b><span>中央社、LSE 130</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><rect x="4" y="4" width="112" height="58" rx="3"/><path d="M4 32h112M40 4v58M80 4v58" stroke-dasharray="2 4"/><circle cx="70" cy="30" r="5" class="f"/><path d="M14 72h92"/><circle cx="56" cy="72" r="4" class="f"/></svg><b>互動地圖＋時間滑桿</b><span>CERN 70、台大</span></div>
+            <div class="wf"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M8 14h104M8 30h104M8 46h104M8 62h104"/><rect x="8" y="10" width="14" height="8" class="f"/><rect x="8" y="26" width="14" height="8" class="f"/><rect x="8" y="42" width="14" height="8" class="f"/><rect x="8" y="58" width="14" height="8" class="f"/></svg><b>列表</b><span>消息、連結</span></div>
+          </div>
+        </div>
+        <div class="learn"><b>我的做法：</b>先把界線講在前面（「大概就好」「不要攻擊」）。AI 因此用保守的方式做，遇到擋住就停手，而不是硬闖。</div>
+      </div>
+    </article>
+
+    <!-- 02 追問 -->
+    <article class="step" id="s2">
+      <div class="num">02</div>
+      <div>
+        <h3>看不懂就直接問 <span class="tag">追問</span></h3>
+        <div class="bubble me"><small>我說</small><span class="quote">「Swiper 是什麼」→「Swiper 與 Bootstrap 差異」</span></div>
+        <div class="bubble ai"><small>AI 做了什麼</small>
+          <ul>
+            <li>用白話解釋：Swiper 是專做輪播/滑動的套件；Bootstrap 是整套 UI 框架，兩者只有「輪播」重疊</li>
+            <li>附對照表與最小程式範例，並說明實務上常一起用</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- 03 只給連結，AI 自己進去拼湊內容 -->
+    <article class="step" id="s3">
+      <div class="num">03</div>
+      <div>
+        <h3>我只給連結，AI 自己進去拼湊內容 <span class="tag">建站</span><span class="tag warn">把關 4</span></h3>
+
+        <div class="bubble me"><small>我問（概述）</small><span class="quote">「如果要拼湊成這個網站，需要什麼素材？」</span></div>
+        <div class="bubble ai"><small>AI 回：需要哪些素材、做了什麼</small>
+          <ul>
+            <li>讀需求文件的頁面架構、量測政大的配色與版型、讀我的站列出可用素材（1 支影片、4 張海報、24 張照片），拼成 8 個頁面 + 共用 CSS/JS；倒數目標採用我給的日期，並用瀏覽器驗證</li>
+            <li>日期來源 <a href="https://www.sinica.edu.tw/news_content/55/3665" target="_blank" rel="noopener">[1] 中研院新聞</a>、<a href="https://zh.wikipedia.org/zh-tw/%E4%B8%AD%E5%A4%AE%E7%A0%94%E7%A9%B6%E9%99%A2" target="_blank" rel="noopener">[2] 維基百科</a> 當時未另外開啟。事後核對：[1] 是 2026-02-03 的書展新聞，寫「中研院即將在 2028 年迎接 100 周年」；[2] 維基寫成立時間 1928年6月9日，與 2028-06-09 一致</li>
+          </ul>
+        </div>
+
+        <div class="bigpanel">
+          <p class="bigkicker">重點</p>
+          <h3>於是我回它的，只有 3 條連結</h3>
+          <p class="bigsub">素材清單有了，我不再自己整理內容，只把來源連結丟給它，由它自己進去讀、去拼。（實際上這則是在後面幾輪調整之後才貼出；這裡接在一起，方便對照。）</p>
+
+          <div class="bubble me" style="max-width:none"><small>我說（一次貼了 4 段話）</small>
+            <span class="quote">
+              「title 做成「寫這是<b>示意站</b>」（其他內容不用提到參考了哪些）　是不是以 10 年 10 年做一個區間會比較好？」<br>
+              「然後以<b>摺疊</b>的方式可以看更多，到這裡面去看照片，或是看更多再去那頁（你照片可以超連結，使用這個站的，<b>這是我做的站</b>）<br>
+              　<a href="https://anniversary.sec.sinica.edu.tw/tpe70/" target="_blank" rel="noopener">https://anniversary.sec.sinica.edu.tw/tpe70/</a>」<br>
+              「然後<b>最新的院長不是廖院長，是陳院長</b>，可以參考這篇<br>
+              　<a href="https://www.sinica.edu.tw/news_content/55/3832" target="_blank" rel="noopener">https://www.sinica.edu.tw/news_content/55/3832</a>」<br>
+              「然後近幾年的院內新聞可以看這（<b>可是他有 CDN，會防扒取，要小心喔</b>）<br>
+              　<a href="https://www.sinica.edu.tw/news_card/55?pagenumber=1&amp;pagesize=1200" target="_blank" rel="noopener">https://www.sinica.edu.tw/news_card/55?pagenumber=1&amp;pagesize=1200</a>」
+            </span>
+          </div>
+
+          <div class="bigstats">
+            <div><b>3</b><span>條我給的連結</span></div>
+            <div><b>7</b><span>個年代分頁被連結（站台共 8 個）</span></div>
+            <div><b>1</b><span>位新院長被查證並更新</span></div>
+            <div><b>4</b><span>則真實新聞被取用</span></div>
+          </div>
+
+          <div class="tw"><table class="lk big">
+            <tr><th>#</th><th>我給的連結</th><th>我給它的用途</th><th>AI 進去後拼出的內容</th></tr>
+            <tr><td>1</td><td><a href="https://anniversary.sec.sinica.edu.tw/tpe70/" target="_blank" rel="noopener">anniversary.sec.sinica.edu.tw/tpe70/</a><br><small>院區 70 週年影像展（我做的站）</small></td><td>照片可以超連結到這個站</td><td>讀站台結構，發現它<b>按年代分 8 個分頁</b>（<code>1.0_1.html … 8.0_1.html</code>）→ 大事記改成<b>每十年一段的摺疊區塊</b>，每張照片與「看更多」連到對應年代的分頁；院區頁的圖也一併連結</td></tr>
+            <tr><td>2</td><td><a href="https://www.sinica.edu.tw/news_content/55/3832" target="_blank" rel="noopener">sinica.edu.tw/news_content/55/3832</a><br><small>院長交接典禮新聞</small></td><td>最新的院長是陳院長</td><td>讀新聞，查證<b>2026-06-18 陳建仁接任第 13 任院長</b>（自廖俊智手中）→ 更新歷任院長（新增第 10 位、廖俊智任期改 2016–2026）、大事記 2026 條目、「院長的話」（並註明示意文字非院長本人談話）</td></tr>
+            <tr><td>3</td><td><a href="https://www.sinica.edu.tw/news_card/55?pagenumber=1&amp;pagesize=1200" target="_blank" rel="noopener">sinica.edu.tw/news_card/55</a><br><small>院內新聞列表</small></td><td>近幾年的院內新聞（有 CDN 防扒取，要小心）</td><td>只發<b>一次</b>請求，且把每頁筆數從 1200 降到 15 → 取 4 則真實近期新聞，放進「最新消息」並連回官網</td></tr>
+          </table></div>
+          <p class="treenote" style="margin-top:12px">同一則訊息裡的其他要求：標題與頁首標示「示意站」、清掉全站「參考 OO 網站」字樣（AI 一併全站處理）。過程中 AI 還順手修掉一個潛在 bug：子頁橫幅背景圖因 CSS 路徑解析而 404。</p>
+        </div>
+
+      </div>
+    </article>
+
+    <!-- 04 AI 自己測出的 bug -->
+    <article class="step" id="s4">
+      <div class="num">04</div>
+      <div>
+        <h3>AI 自己測出第一個 bug <span class="tag warn">踩坑</span></h3>
+        <div class="bubble ai"><small>AI 做了什麼（我沒有提醒）</small>
+          <ul>
+            <li>驗證時發現頁面「自己一直往下捲」（約每秒 180px）</li>
+            <li>追出原因：<code>body</code> 的 <code>overflow-x:hidden</code> 讓 body 變成捲動容器，和平滑捲動套件 Lenis 互相拉扯</li>
+            <li>改成 <code>overflow-x:clip</code>，並停用瀏覽器自動還原捲動位置；重測確認位置不再漂移</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- 05 併行調整 -->
+    <article class="step" id="s5">
+      <div class="num">05</div>
+      <div>
+        <h3>一輪輪的調整：換影片、貼截圖回報、收斂內容 <span class="tag warn">把關 1–3（②③④）</span></h3>
+        <div class="bubble me"><small>我說（前後幾輪，原話）</small>
+          <span class="quote">
+            ① （AI 還在做事時直接插話）「一開始影片換成這個（YouTube 連結）　然後<b>從 24 秒開始</b>喔」<br>
+            ② （貼截圖：影片區顯示「錯誤 153」）「為什麼我直接開 INDEX 就會<b>錯誤 153</b>」<br>
+            ③ （貼截圖：時間軸年份與圓點擠在一起）「這個 2027 Q1 與圈圈<b>靠在一起</b>了」<br>
+            ④ 「院長的照片　幫我用一個<b>框框</b>就好　因為那個不是現在院長，百年禮品也用框框就好」
+          </span>
+        </div>
+        <div class="bubble ai"><small>AI 做了什麼</small>
+          <ul>
+            <li><b>① 換影片：</b>改用 YouTube IFrame API 做全螢幕背景（靜音、自動播放、循環時跳回第 24 秒）；第一次沒出現，查出是自己加的背景色蓋住了「負 z-index 的影片層」，修好；「形象影片」區塊也換成同一支</li>
+            <li><b>② 錯誤 153：</b>原因是直接雙擊開檔（<code>file://</code>）沒有網域，YouTube 拒絕內嵌；加了保護，偵測到 <code>file://</code> 時改顯示靜態主視覺與「在 YouTube 觀看」連結</li>
+            <li><b>③ 時間軸擠在一起：</b>重新配置欄位（年份欄 ┊ 間距 ┊ 內容欄），圓點置中於直線、兩側各留固定間距；兩頁都驗證</li>
+            <li><b>④ 框框：</b>新增可重用的「佔位框」，替換院長照片與所有禮品圖；輪播方框太高順手改成橫式；只改我指定的「一個」院長照片，並主動說明「歷任院長」小頭像沒動、要的話再一起換</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <!-- 06 交接 -->
+    <article class="step" id="s6">
+      <div class="num">06</div>
+      <div>
+        <h3>為「換電腦繼續做」打包 <span class="tag">交接</span></h3>
+        <div class="bubble me"><small>我說</small><span class="quote">「我想把目前的成果與你分析的做成一包，我換地點後（資料夾會帶著走）另外一台電腦能繼續做，我需要做些什麼嗎」</span></div>
+        <div class="bubble ai"><small>AI 做了什麼</small>
+          <ul>
+            <li>把口頭分析寫成檔案：<code>分析_參考網站技術.md</code></li>
+            <li>寫 <code>CLAUDE.md</code>（新電腦開 Claude 會自動讀）與 <code>專案現況與交接.md</code>（進度、待辦、換電腦步驟）</li>
+            <li>把 <code>launch.json</code> 裡寫死的本機 Python 路徑改成可攜；壓成 5.4 MB 的 zip 並檢查內容完整</li>
+            <li>提醒：對話記錄不會跟著資料夾走，所以才要把脈絡寫進檔案</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ============================ 溝通心法 ============================ -->
+<section id="patterns" class="alt">
+  <div class="wrap">
+    <p class="kicker">溝通心法</p>
+    <h2 class="title">這次有效的 7 種說話方式</h2>
+    <div class="pattern">
+      <div><b>① 先講界線</b><p>「大概就好」「不要以攻擊的方式」。界線在前，AI 行為就會保守。</p></div>
+      <div><b>② 給參考、給素材</b><p>「仿照政大」＋貼自己的站。比抽象形容詞（「大氣一點」）更準。</p></div>
+      <div><b>③ 硬性條件單獨點出</b><p>「一開始要有倒數」——放在句尾強調，AI 會當成必做項。</p></div>
+      <div><b>④ 截圖 + 一句話回報 bug</b><p>不必懂技術；畫面 + 「這裡怪怪的」就足夠定位。</p></div>
+      <div><b>⑤ 一次交代多件事</b><p>一則訊息講好幾件事，AI 逐項完成並回報，省去來回。</p></div>
+      <div><b>⑥ 事實由人給來源</b><p>有些資料過舊（例如院史網），所以不知道現任已是陳院長。我貼上新的歷任院長連結，讓 AI 去查證，而不是憑印象。</p></div>
+      <div><b>⑦ 要求寫進檔案</b><p>「做成一包、換電腦能繼續做」——把脈絡存成 <code>CLAUDE.md</code> 等檔案，跨電腦也接得上。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 分工 ============================ -->
+<section id="roles">
+  <div class="wrap">
+    <p class="kicker">分工</p>
+    <h2 class="title">人負責什麼、AI 負責什麼</h2>
+    <div class="two">
+      <div class="card me"><h3>我（人）</h3>
+        <ul>
+          <li>決定方向與範圍（做什麼、不做什麼）</li>
+          <li>提供事實與素材來源（現任院長、影像展、影片）</li>
+          <li>設定安全與倫理界線（例如不攻擊別人的網站）</li>
+          <li>驗收成果並糾正（框框、時間軸擠在一起）</li>
+          <li>對外負責：內容正確性、圖片授權</li>
+        </ul></div>
+      <div class="card ai"><h3>AI</h3>
+        <ul>
+          <li>查資料與分析（8 個網站的技術判讀）</li>
+          <li>把口語需求拆成頁面、設計系統與程式</li>
+          <li>撰寫 HTML / CSS / JS 並在瀏覽器實測</li>
+          <li>自己找 bug、修 bug、說明原因</li>
+          <li>整理文件與交接（分析報告、CLAUDE.md、zip）</li>
+        </ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 成品 ============================ -->
+<section id="product" class="alt">
+  <div class="wrap">
+    <p class="kicker">成品</p>
+    <h2 class="title">最後長這樣</h2>
+    <p class="sub">成品已放在 GitHub Pages，直接開啟就能看（首頁開場即是倒數計時，背景影片會自動播放）。</p>
+    <a class="livebtn" href="https://yunrudu.github.io/centennial-demo/index.html" target="_blank" rel="noopener">
+      <span>開啟成品網站 ↗</span>
+      <small>https://yunrudu.github.io/centennial-demo/index.html</small>
+    </a>
+    <p style="font-size:.84rem;color:var(--muted);margin-top:1.4rem">技術路線：無框架純靜態 HTML/CSS/JS + GSAP ScrollTrigger + Lenis + Swiper（皆走 CDN），部署在 GitHub Pages。</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>中央研究院百年院慶示意站 ・ 製作歷程說明</span>
+    <span>成品：<a href="https://yunrudu.github.io/centennial-demo/index.html" target="_blank" rel="noopener">yunrudu.github.io/centennial-demo</a></span>
+  </div>
+</footer>
+
+</body>
+</html>
