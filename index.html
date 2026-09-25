@@ -36,6 +36,12 @@ a{color:var(--teal)}
 h1,h2,h3,h4{font-family:var(--serif);line-height:1.3;margin:0}
 code{font-size:.9em}
 
+/* 版面防爆：格線子元素允許縮小、長網址與程式碼可換行 */
+.step > div{min-width:0}
+.bubble,.learn,.treenote,.sub,.lead,.card,.pattern div,.tldr div{overflow-wrap:anywhere}
+.quote a,.bubble a,.docfig figcaption{overflow-wrap:anywhere;word-break:break-all}
+html{overflow-x:clip}
+
 /* ---------- layout ---------- */
 .wrap{max-width:1040px;margin-inline:auto;padding-inline:clamp(18px,5vw,48px)}
 section{padding-block:clamp(48px,8vw,96px)}
@@ -180,8 +186,32 @@ footer a{color:#cfe0de}
 
 /* ---------- responsive / print ---------- */
 @media (max-width:640px){
-  .step{grid-template-columns:1fr}
+  section{padding-block:40px}
+  .wrap{padding-inline:16px}
+  .step{grid-template-columns:minmax(0,1fr);gap:6px}
   .num{text-align:left}
+  .hero{padding:64px 0 48px}
+  .stats{gap:14px 28px}
+  .meta{line-height:1.7}
+  .bubble{padding:12px 14px}
+  .bigpanel{padding:16px 14px}
+  .bigstats{grid-template-columns:1fr 1fr}
+  .treebox{padding:14px 12px}
+  .tree ul{margin-left:10px;padding-left:16px}
+  .tree ul > li::before{left:-16px;width:14px}
+  .node{gap:3px 6px;padding:6px 8px}
+  .lay,.out{white-space:normal}
+  .legend{grid-template-columns:repeat(2,1fr)}
+  .flow{gap:8px}
+  .livebtn{width:100%;padding:16px 18px}
+  /* 寬表格：固定最小寬度，在框內左右滑動，不要把欄位擠成一條 */
+  .tw::before{content:"← 左右滑動看完整表格 →";display:block;font-size:12px;color:var(--muted);margin:6px 0 2px}
+  table.lk{min-width:640px}
+  table.lk.big{min-width:760px}
+  table.lk.big td:nth-child(2){min-width:170px}
+  table.lk.big td:nth-child(3){min-width:96px}
+  table.lk.big td:nth-child(4),table.lk.big td:nth-child(5){min-width:200px}
+  table.lk td,table.lk th{word-break:normal;overflow-wrap:anywhere}
 }
 @media print{
   body{background:#fff}
